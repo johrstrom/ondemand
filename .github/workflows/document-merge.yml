@@ -17,7 +17,7 @@ jobs:
       - name: Check for 'needs doc' label
         run: |
           PR_NUM=${{ github.event.pull_request.number }}
-          LABELS=$(curl https://github.com/johrstrom/ondemand/issues/$PR_NUM | | jq '.labels[].name)
+          LABELS=$(curl "https://github.com/johrstrom/ondemand/issues/$PR_NUM" | | jq '.labels[].name')
           echo $LABELS
 
       # - name: Create an issue on the documentation repository
