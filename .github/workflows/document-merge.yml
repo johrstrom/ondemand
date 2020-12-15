@@ -14,9 +14,6 @@ jobs:
     if: github.event.pull_request.merged == true
     steps:
       - name: Check for 'needs doc' label
-        outputs:
-          needs-doc:
-            description: 'boolean as to whether the PR needs a doc ticket'
         run: |
           IFS='
           '
