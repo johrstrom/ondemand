@@ -13,23 +13,40 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     steps:
-      - uses: actions/checkout@v2
       - name: Check for 'needs doc' label
+        outputs:
+          needs-doc:
+            description: 'boolean as to whether the PR needs a doc ticket'
+        run: |
+          IFS='
+          '
+          PR_NUM=${{ github.event.pull_request.number }}
+          LABELS=$(curl "https://api.github.com/repos/johrstrom/ondemand/issues/$PR_NUM" | jq '.labels[].name')
+
+          # make labels a bash array
+          declare -a LABELS=($LABELS)
+          echo "all labels are [${LABELS[@]}]"
+
+          echo "::set-output name=needs_doc::false"
+          for LABEL in ${LABELS[@]}; do
+            if [[ "$LABEL" == '"needs doc"' ]]; then
+              echo 'found $LABEL label'
+              echo "::set-output name=needs-doc::true"
+            fi
+          done
+          
+      - name: Create an issue on the documentation repository
+        if: steps.create-doc-issue.outputs.needs-doc
         run: |
           PR_NUM=${{ github.event.pull_request.number }}
-          LABELS=$(curl "https://github.com/johrstrom/ondemand/issues/$PR_NUM" | jq '.labels[].name')
-          echo $LABELS
+          TITLE="Create Docs for OOD PR #$PR_NUM"
+          BODY="{
+             \"title\": \"$TITLE\",
+             \"body\": \"Create documentation for https://github.com/johrstrom/ondemand/pulls/$PR_NUM\"
+          }"
 
-      # - name: Create an issue on the documentation repository
-      #   run: |
-      #     TITLE="Create Docs for "
-      #     BODY="{
-      #        \"title\": \"$TITLE\",
-      #        \"body\": \"Create documentation for https://github.com/OSC/ondemand/commit/$GITHUB_SHA\"
-      #     }"
-
-      #     curl --silent --output /dev/null --request POST \
-      #     --url https://api.github.com/repos/OSC/ood-documentation/issues \
-      #     --header 'Authorization: token ${{ secrets.OSCWIAG_ISSUE_TOKEN }}' \
-      #     --header 'content-type: application/json' \
-      #     --data "$BODY"
+          curl --silent --output /dev/null --request POST \
+          --url https://api.github.com/repos/johrstrom/other-test-actions/issues \
+          --header 'Authorization: token ${{ secrets.MY_ISSUE_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data "$BODY"
