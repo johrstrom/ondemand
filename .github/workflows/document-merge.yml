@@ -12,28 +12,9 @@ jobs:
   create-doc-issue:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
-    steps:
-      - name: Check for 'needs doc' label
-        run: |
-          IFS='
-          '
-          PR_NUM=${{ github.event.pull_request.number }}
-          LABELS=$(curl "https://api.github.com/repos/johrstrom/ondemand/issues/$PR_NUM" | jq '.labels[].name')
-
-          # make labels a bash array
-          declare -a LABELS=($LABELS)
-          echo "all labels are [${LABELS[@]}]"
-
-          echo "::set-output name=needs_doc::false"
-          for LABEL in ${LABELS[@]}; do
-            if [[ "$LABEL" == '"needs doc"' ]]; then
-              echo 'found $LABEL label'
-              echo "::set-output name=needs-doc::true"
-            fi
-          done
-          
+    steps:          
       - name: Create an issue on the documentation repository
-        if: steps.create-doc-issue.outputs.needs-doc
+        if: contains(github.event.pull_request.labels.*.name, 'needs doc')
         run: |
           PR_NUM=${{ github.event.pull_request.number }}
           TITLE="Create Docs for OOD PR #$PR_NUM"
