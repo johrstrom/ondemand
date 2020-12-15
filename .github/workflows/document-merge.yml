@@ -20,7 +20,7 @@ jobs:
           TITLE="Create Docs for OOD PR #$PR_NUM"
           BODY="{
              \"title\": \"$TITLE\",
-             \"body\": \"Create documentation for https://github.com/johrstrom/ondemand/pulls/$PR_NUM\"
+             \"body\": \"Create documentation for https://github.com/johrstrom/ondemand/pull/$PR_NUM\"
           }"
 
           curl --silent --output /dev/null --request POST \
