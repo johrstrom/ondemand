@@ -48,13 +48,14 @@ jobs:
 
       - name: Add Updates to GITHUB ENV
         run: |
-          git diff --exit-code
-          echo "DIFF_AFTER_UPDATE=$?" >> $GITHUB_ENV
+          if ! git diff --quiet --exit-code; then
+            echo "DIFF_AFTER_UPDATE=YES" >> $GITHUB_ENV
+          fi
 
       - name:
         run: |
           echo "diff after update? $DIFF_AFTER_UPDATE"
-          if [[ "$DIFF_AFTER_UPDATE" == "1" ]]; then
+          if [[ -n "$DIFF_AFTER_UPDATE" ]]; then
             git checkout -b dependency-updates-$(date +%m-%d)
             git add .
             git commit -m 'dependency updates'
