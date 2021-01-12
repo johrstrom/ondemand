@@ -40,8 +40,8 @@ jobs:
 
       - name: Setup git
         run: |
-          git config --global user.email "${{ GIT_USER_EMAIL }}"
-          git config --global user.name "${{ GIT_USERNAME }}"
+          git config --global user.email johrstrom@hotmail.com
+          git config --global user.name "Jeff Ohrstrom"
 
       - name: Run Rake Update
         run: rake update
