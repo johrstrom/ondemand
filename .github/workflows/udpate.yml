@@ -7,7 +7,7 @@ on:
     - cron:  '*/15 * * * *'
 
 jobs:
-  unit-tests:
+  update-dependencies:
     strategy:
       fail-fast: false
       matrix:
