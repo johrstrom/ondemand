@@ -46,17 +46,15 @@ jobs:
       - name: Run Rake Update
         run: rake update
 
-      - name: Add Updates to GITHUB ENV
-        run: |
-          if ! git diff --quiet --exit-code; then
-            echo "DIFF_AFTER_UPDATE=YES" >> $GITHUB_ENV
-          fi
-
-      - name:
-        run: |
-          echo "diff after update? $DIFF_AFTER_UPDATE"
-          if [[ -n "$DIFF_AFTER_UPDATE" ]]; then
-            git checkout -b dependency-updates-$(date +%m-%d)
-            git add .
-            git commit -m 'dependency updates'
-          fi
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.MY_ISSUE_TOKEN }}
+          commit-message: update dependencies
+          committer: Jeff Ohrstrom <johrstrom@hotmail.com>
+          author: johrstrom <johrstrom@hotmail.com>
+          branch: oscwiag-dep-updates
+          delete-branch: true
+          title: 'Update Dependencies'
+          body: |
+            Update dependencies generated from `rake update`
