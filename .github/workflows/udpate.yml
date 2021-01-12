@@ -1,0 +1,60 @@
+name: Update Dependencies
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '*/15 * * * *'
+
+jobs:
+  unit-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        ruby: ["2.7.1"]
+        bundler: ["2.1.4"]
+    runs-on: ${{ matrix.os }}
+    name: Update Dependencies
+
+  steps:
+    - name: Checkout ${{ github.sha	}}
+      uses: actions/checkout@v2
+
+    - name: Setup Ruby ${{ matrix.ruby }} using Bundler ${{ matrix.bundler }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler: ${{ matrix.bundler }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/vendor/bundle
+        key: ${{ runner.os }}-${{ matrix.ruby }}-gems-${{ hashFiles('apps/*/Gemfile.lock') }}
+
+    - name: Setup Bundler
+      run: |
+        bundle config path ~/vendor/bundle
+
+
+    - name: Setup git
+      run: |
+        git config --global user.email "${{ GIT_USER_EMAIL }}"
+        git config --global user.name "${{ GIT_USERNAME }}"
+
+    - name: Run Rake Update
+      run: rake update
+
+    - name: Add Updates to GITHUB ENV
+      run: |
+        git diff --exit-code
+        echo "DIFF_AFTER_UPDATE=$?" >> $GITHUB_ENV
+
+    - name: 
+      run: |
+        echo "diff after update? $DIFF_AFTER_UPDATE"
+        if [[ "$DIFF_AFTER_UPDATE" == "1" ]]; then
+          git checkout -b dependency-updates-$(date +%m-%d)
+          git add .
+          git commit -m 'dependency updates'
+        fi
