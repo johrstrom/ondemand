@@ -264,6 +264,8 @@ class Project
   # This creates them _and_ serializes them to yml in the new directory.
   def save_new_scripts
     dir = Launcher.scripts_dir(template)
+    return false unless dir.exist? && dir.readable?
+
     Dir.glob("#{dir}/*/form.yml").map do |script_yml|
       Launcher.from_yaml(script_yml, project_dataroot)
     end.map do |script|
