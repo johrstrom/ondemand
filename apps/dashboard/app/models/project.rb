@@ -84,7 +84,7 @@ class Project
     update_attrs(attributes)
     @directory = attributes[:directory]
     @directory = File.expand_path(@directory) unless @directory.blank?
-    @template = attributes[:template]
+    @template = safe_template(attributes[:template])
 
     return if new_record?
 
@@ -302,5 +302,13 @@ class Project
     template_path = Pathname.new(template)
     errors.add(:template, :invalid) if Project.templates.map { |t| t.directory.to_s }.exclude?(template.to_s)
     errors.add(:template, :invalid) unless template_path.exist? && template_path.readable?
+  end
+
+  def safe_template(path)
+    return nil if path.nil?
+    path = path.to_s
+    
+    return path if File.exist?(path) && File.directory?(path) && File.readable?(path)
+    return nil
   end
 end
